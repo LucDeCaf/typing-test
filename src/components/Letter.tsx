@@ -1,4 +1,4 @@
-import { Component, createEffect } from "solid-js";
+import { Component } from "solid-js";
 
 interface LetterProps {
     target: string;
@@ -6,25 +6,20 @@ interface LetterProps {
     extra: boolean;
 }
 
-const LetterBase: Component<{ content: string; class?: string }> = (props) => {
-    return <span class={props.class ? props.class : ""}>{props.content}</span>;
-};
-
 const Letter: Component<LetterProps> = (props) => {
     if (props.extra) {
-        return <LetterBase class="text-red-700" content={props.value} />;
+        return <span class="text-red-900">{props.value}</span>;
     }
 
     if (props.value === "") {
-        return <LetterBase class="text-slate-400" content={props.target} />;
+        return <span class="text-slate-500">{props.target}</span>;
     }
 
-    return (
-        <LetterBase
-            class={props.target === props.value ? "" : "text-red-500"}
-            content={props.target}
-        />
-    );
+    if (props.target !== props.value) {
+        return <span class="text-red-500">{props.target}</span>;
+    }
+
+    return <span>{props.value}</span>;
 };
 
 export { Letter, type LetterProps };

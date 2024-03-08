@@ -1,4 +1,4 @@
-import { Component, For } from "solid-js";
+import { Component, For, Show } from "solid-js";
 import { Letter } from "./Letter";
 
 interface WordProps {
@@ -7,24 +7,31 @@ interface WordProps {
 }
 
 const Word: Component<WordProps> = (props) => {
-    const targetLetters = props.target.split("");
-    const valueLetters = props.value.split("");
-    const extraLetters = valueLetters.slice(targetLetters.length);
-
+    const targetLetters = () => props.target.split("");
+    const valueLetters = () => props.value.split("");
+    
     return (
         <div>
-            <For each={targetLetters}>
-                {(target, i) => (
+            <For each={valueLetters()}>
+                {(value, i) => (
                     <Letter
-                        target={target}
-                        value={valueLetters[i()] ? valueLetters[i()] : ""}
-                        extra={false}
+                        target={targetLetters()[i()]}
+                        value={value}
+                        extra={i() >= targetLetters().length}
                     />
                 )}
             </For>
-            <For each={extraLetters}>
-                {(extra, i) => <Letter target="" value={extra} extra={true} />}
-            </For>
+            <Show when={targetLetters().length > valueLetters().length}>
+                <For each={targetLetters().slice(valueLetters().length)}>
+                    {(target, _i) => (
+                        <Letter
+                            target={target}
+                            value={''}
+                            extra={false}
+                        />
+                    )}
+                </For>
+            </Show>
         </div>
     );
 };
