@@ -9,9 +9,9 @@ interface WordProps {
 const Word: Component<WordProps> = (props) => {
     const targetLetters = () => props.target.split("");
     const valueLetters = () => props.value.split("");
-    
+
     return (
-        <div>
+        <div class="inline-block mr-4">
             <For each={valueLetters()}>
                 {(value, i) => (
                     <Letter
@@ -24,11 +24,7 @@ const Word: Component<WordProps> = (props) => {
             <Show when={targetLetters().length > valueLetters().length}>
                 <For each={targetLetters().slice(valueLetters().length)}>
                     {(target, _i) => (
-                        <Letter
-                            target={target}
-                            value={''}
-                            extra={false}
-                        />
+                        <Letter target={target} value={""} extra={false} />
                     )}
                 </For>
             </Show>
