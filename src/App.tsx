@@ -2,32 +2,30 @@ import {
     createSignal,
     type Component,
     For,
-    Show,
-    createResource,
-    Switch,
-    Match,
+    createEffect,
 } from "solid-js";
 import { Word } from "./components/Word";
 import { Results } from "./components/Results";
-
-const fetchWords = async (number: number) => {
-    const res = await fetch(
-        `https://random-word-api.herokuapp.com/word?number=${number}`
-    );
-    return (await res.json()) as string[];
-};
+import { generate } from "random-words";
 
 const App: Component = () => {
-    const [targetWords, { refetch: refetchTargetWords }] = createResource(
-        () => 10,
-        fetchWords
-    );
+    const [target, setTarget] = createSignal<string[]>([]);
     const [words, setWords] = createSignal([""]);
     const [showResults, setShowResults] = createSignal(false);
 
-    const resetTest = () => {
-        refetchTargetWords();
-        setWords([""]); 
+    const generateTarget = (number: number) => {
+        const target = generate({
+            exactly: number,
+            minLength: 2,
+            maxLength: 8,
+        });
+
+        return target as string[];
+    };
+
+    const startTest = () => {
+        setTarget(generateTarget(10));
+        setWords([""]);
         addEventListener("keydown", handleKeyDown);
     };
 
@@ -37,13 +35,11 @@ const App: Component = () => {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-        if (!targetWords()) return;
-
         const newWords = [...words()];
 
         switch (e.code) {
             case "Space":
-                if (newWords.length === targetWords()!.length) {
+                if (newWords.length === target()!.length) {
                     stopTest();
                     return;
                 }
@@ -84,16 +80,17 @@ const App: Component = () => {
         }
 
         if (
-            newWords.length === targetWords()!.length &&
-            newWords[newWords.length - 1] ===
-                targetWords()![targetWords()!.length - 1]
+            newWords.length === target()!.length &&
+            newWords[newWords.length - 1] === target()![target()!.length - 1]
         ) {
             stopTest();
         }
         setWords(newWords);
     };
 
-    resetTest();
+    createEffect(() => {
+        showResults() ? null : startTest();
+    });
 
     return (
         <main class="px-16 pt-32">
@@ -101,32 +98,21 @@ const App: Component = () => {
                 Start typing to take the test
             </h1>
             <div class="p-24 text-2xl font-mono">
-                <Switch>
-                    <Match when={targetWords.loading}>
-                        <div class="text-slate-600 text-center w-full">
-                            Loading...
-                        </div>
-                    </Match>
-                    <Match when={targetWords()}>
-                        <For each={targetWords()}>
-                            {(target, i) => (
-                                <Word
-                                    target={target}
-                                    value={words()[i()] ? words()[i()] : ""}
-                                />
-                            )}
-                        </For>
-                    </Match>
-                </Switch>
+                <For each={target()}>
+                    {(target, i) => (
+                        <Word
+                            target={target}
+                            value={words()[i()] ? words()[i()] : ""}
+                        />
+                    )}
+                </For>
             </div>
-            <Show when={showResults()}>
-                <Results
-                    words={words}
-                    target={targetWords}
-                    setShowResults={setShowResults}
-                    resetter={resetTest}
-                />
-            </Show>
+            <Results
+                show={showResults}
+                words={words}
+                target={target}
+                setShow={setShowResults}
+            />
         </main>
     );
 };
